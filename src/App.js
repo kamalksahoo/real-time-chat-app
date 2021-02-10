@@ -1,23 +1,63 @@
-import logo from './logo.svg';
+import React,{useState,useEffect} from "react"
 import './App.css';
+import firebase from "firebase"
+import database from "./firebase"
 
 function App() {
+  const [input,setInput]=useState("")
+  const [error,setError]=useState("")
+  const [username,setUser]=useState("")
+
+
+  const [list,setList]=useState([])
+  const storeMessage=(event)=>{
+    setInput(event.target.value)
+  }
+  useEffect(()=>{
+    setUser(window.prompt("enter your name"))
+  },[])
+
+  useEffect(() => {
+    database
+    .collection('messages')
+    .orderBy('timestamp','asc')
+    .onSnapshot((snapshot)=>{
+      setList(snapshot.docs.map((doc)=>({
+          id:doc.id,
+          data:doc.data()
+        }))
+      );
+    })
+  }, [])
+  const sendMessage=(event)=>{
+    event.preventDefault();
+    if(input===""){
+      setError("write something first")
+    }else{
+      const chatMessage={
+        message:input,
+        timestamp:firebase.firestore.FieldValue.serverTimestamp()
+      }
+      database.collection('messages').add(chatMessage);
+      // setList([...list,input])
+      setInput("")
+      setError("")
+    }
+  }
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+     <h1 className="heading">Real Time Chat App</h1>
+     <h3 className="error">{error}</h3>
+     <div className="ourmessage">
+       
+      {
+        list.map(({id,data:{message,timestamp}})=>(<h3 key={id} className="chat"><span className="username">{username} : </span>{message}</h3>))
+      }
+     </div>
+     <form>
+     <input value={input} onChange={storeMessage} placeholder="write message"/>
+     <button type="submit" onClick={sendMessage}>Send Mesaage</button>
+     </form>
     </div>
   );
 }
