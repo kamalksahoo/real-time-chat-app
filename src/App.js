@@ -6,7 +6,7 @@ import database from "./firebase"
 function App() {
   const [input,setInput]=useState("")
   const [error,setError]=useState("")
-  const [username,setUser]=useState("")
+  const [username,setUser]=useState("Guest")
 
 
   const [list,setList]=useState([])
@@ -14,7 +14,8 @@ function App() {
     setInput(event.target.value)
   }
   useEffect(()=>{
-    setUser(window.prompt("enter your name"))
+    const name=window.prompt("enter your name");
+    setUser(name);
   },[])
 
   useEffect(() => {
@@ -35,6 +36,7 @@ function App() {
       setError("write something first")
     }else{
       const chatMessage={
+        name:username,
         message:input,
         timestamp:firebase.firestore.FieldValue.serverTimestamp()
       }
@@ -51,7 +53,7 @@ function App() {
      <div className="ourmessage">
        
       {
-        list.map(({id,data:{message,timestamp}})=>(<h3 key={id} className="chat"><span className="username">{username} : </span>{message}</h3>))
+        list.map(({id,data:{message,timestamp,name}})=>(<h3 key={id} className="chat"><span className="username">{name} : </span>{message}</h3>))
       }
      </div>
      <form>
